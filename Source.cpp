@@ -10,9 +10,13 @@ class PlayerBoard
 public:
 	std::vector < std::vector<bool>> board;
 	std::vector<std::pair<int, int>> DestroyerCoordinates;
+	int DestroyerCounter = 2;
 	std::vector<std::pair<int, int>> CruiserCoordinates;
+	int CruiserCounter = 3;
 	std::vector<std::pair<int, int>> SubmarineCoordinates;
+	int SubmarineCounter = 4;
 	std::vector<std::pair<int, int>> AircraftCoordinates;
+	int AircraftCounter = 5;
 
 
 	PlayerBoard()
@@ -24,7 +28,7 @@ public:
 	}
 };
 
-void CreateBoard(std::vector<std::vector<bool>>& P1) //p1 and p2 board
+void CreateBoard(std::vector<std::vector<bool>>& P1) //p1
 {
 	std::vector<bool> temp;
 	for (int i = 0; i < BOARD_SIZE; i++)
@@ -39,7 +43,7 @@ void CreateBoard(std::vector<std::vector<bool>>& P1) //p1 and p2 board
 }
 	
 
-bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std::vector<bool>>& ComputerAttacks,std::vector<std::vector<char>>& PrintedMap)
+bool ComputerTurn(PlayerBoard& Player1Board, std::vector<std::vector<bool>>& ComputerAttacks,std::vector<std::vector<char>>& PrintedMap)
 {
 	int AttackCoordinateX = rand() % BOARD_SIZE;
 	int AttackCoordinateY = rand() % BOARD_SIZE ;
@@ -51,9 +55,45 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 		AttackCoordinateY = rand() % BOARD_SIZE;
 	}
 	PrintedMap[AttackCoordinateX][AttackCoordinateY] = 'X';
-	if (Player1Board[AttackCoordinateX][AttackCoordinateY] == 1)
+	if (Player1Board.board[AttackCoordinateX][AttackCoordinateY] == 1)
 	{
 		std::cout << "Computer attack hit!\n";
+		for (int i = 0; i < Player1Board.AircraftCoordinates.size(); i++)
+		{
+			if (Player1Board.AircraftCoordinates[i] == std::make_pair(AttackCoordinateX, AttackCoordinateY))
+			{
+				Player1Board.AircraftCounter--;
+				if (Player1Board.AircraftCounter == 0)
+					std::cout << "Your Aircraft Carrier ship sunk!";
+			}
+		}
+		for (int i = 0; i < Player1Board.DestroyerCoordinates.size(); i++)
+		{
+			if (Player1Board.DestroyerCoordinates[i] == std::make_pair(AttackCoordinateX, AttackCoordinateY))
+			{
+				Player1Board.DestroyerCounter--;
+				if (Player1Board.DestroyerCounter == 0)
+					std::cout << "Your Destroyer ship sunk!";
+			}
+		}
+		for (int i = 0; i < Player1Board.CruiserCoordinates.size(); i++)
+		{
+			if (Player1Board.CruiserCoordinates[i] == std::make_pair(AttackCoordinateX, AttackCoordinateY))
+			{
+				Player1Board.CruiserCounter--;
+				if (Player1Board.CruiserCounter == 0)
+					std::cout << "Your Cruiser ship sunk!";
+			}
+		}
+		for (int i = 0; i < Player1Board.SubmarineCoordinates.size(); i++)
+		{
+			if (Player1Board.SubmarineCoordinates[i] == std::make_pair(AttackCoordinateX, AttackCoordinateY))
+			{
+				Player1Board.SubmarineCounter--;
+				if (Player1Board.SubmarineCounter == 0)
+					std::cout << "Your Submarine ship sunk!";
+			}
+		}
 		return 1;
 	}
 	else
@@ -66,11 +106,11 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 }
 
 
- void PlaceShips(PlayerBoard& shipBoard)
+ void ComputerPlaceShips(PlayerBoard& shipBoard)
 {
 
-	 int AircraftPositionX = rand() % (BOARD_SIZE - 5) + 1; //5x1
-	 int AircraftPositionY = rand() % (BOARD_SIZE - 1) + 1;
+	 int AircraftPositionX = rand() % (BOARD_SIZE - 5); //5x1
+	 int AircraftPositionY = rand() % (BOARD_SIZE);
 	 while (1)//if not valid place reroll
 	 {
 
@@ -78,11 +118,10 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 			 && shipBoard.board[AircraftPositionX + 1][AircraftPositionY] == 0
 			 && shipBoard.board[AircraftPositionX + 2][AircraftPositionY] == 0
 			 && shipBoard.board[AircraftPositionX + 3][AircraftPositionY] == 0
-			 && shipBoard.board[AircraftPositionX + 4][AircraftPositionY] == 0
-			 && shipBoard.board[AircraftPositionX - 1][AircraftPositionY] == 0)
+			 && shipBoard.board[AircraftPositionX + 4][AircraftPositionY] == 0)
 			 break;
-		 AircraftPositionX = rand() % (BOARD_SIZE - 5) + 1;
-		 AircraftPositionY = rand() % (BOARD_SIZE - 1) + 1;
+		 AircraftPositionX = rand() % (BOARD_SIZE - 5);
+		 AircraftPositionY = rand() % (BOARD_SIZE);
 	 }
 	 shipBoard.board[AircraftPositionX][AircraftPositionY] = 1;
 	 shipBoard.board[AircraftPositionX + 1][AircraftPositionY] = 1;
@@ -90,26 +129,43 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 	 shipBoard.board[AircraftPositionX + 3][AircraftPositionY] = 1;
 	 shipBoard.board[AircraftPositionX + 4][AircraftPositionY] = 1;
 
-	 int DestroyerPositionX = rand() % BOARD_SIZE;
-	 int DestroyerPositionY = rand() % BOARD_SIZE;
+	 shipBoard.AircraftCoordinates.push_back(std::make_pair(AircraftPositionX, AircraftPositionY));
+	 shipBoard.AircraftCoordinates.push_back(std::make_pair(AircraftPositionX+1, AircraftPositionY));
+	 shipBoard.AircraftCoordinates.push_back(std::make_pair(AircraftPositionX+2, AircraftPositionY));
+	 shipBoard.AircraftCoordinates.push_back(std::make_pair(AircraftPositionX+3, AircraftPositionY));
+	 shipBoard.AircraftCoordinates.push_back(std::make_pair(AircraftPositionX+4, AircraftPositionY));
+
+	 int DestroyerPositionX = rand() % (BOARD_SIZE-1);
+	 int DestroyerPositionY = rand() % (BOARD_SIZE-1);
+	 while (1)
+	 {
+		
+		 if (shipBoard.board[DestroyerPositionX][DestroyerPositionY] == 0
+			 && shipBoard.board[DestroyerPositionX + 1][DestroyerPositionY] == 0
+			 && shipBoard.board[DestroyerPositionX][DestroyerPositionY + 1] == 0)
+			 break;
+		 DestroyerPositionX = rand() % BOARD_SIZE;
+		 DestroyerPositionY = rand() % BOARD_SIZE;
+	}
+	
 	 shipBoard.board[DestroyerPositionX][DestroyerPositionY] = 1;
-	// shipBoard.DestroyerCoordinates.push_back(std::make_pair(DestroyerPositionX, DestroyerPositionX));
+	 shipBoard.DestroyerCoordinates.push_back(std::make_pair(DestroyerPositionX, DestroyerPositionY));
+
+	
 	 if (DestroyerPositionX != BOARD_SIZE - 1)
 	 {
 		 shipBoard.board[DestroyerPositionX + 1][DestroyerPositionY] = 1;
-	//	 shipBoard.DestroyerCoordinates.push_back(std::make_pair(DestroyerPositionX+1, DestroyerPositionY));
-
+		 shipBoard.DestroyerCoordinates.push_back(std::make_pair(DestroyerPositionX+1, DestroyerPositionY));
 	 }
 	 else
 	 {
 		 shipBoard.board[DestroyerPositionX - 1][DestroyerPositionY] = 1;
-		// shipBoard.DestroyerCoordinates.push_back(std::make_pair(DestroyerPositionX - 1, DestroyerPositionY));
-
+		 shipBoard.DestroyerCoordinates.push_back(std::make_pair(DestroyerPositionX - 1, DestroyerPositionY));
 	 }
 
 	 
-	 int CruiserPositionX = rand() % (BOARD_SIZE - 3) + 1; //3x1
-	 int CruiserPositionY = rand() % (BOARD_SIZE - 3) + 1;
+	 int CruiserPositionX = rand() % (BOARD_SIZE - 3); //3x1 0-boardsize-3 bs = 8   0-6
+	 int CruiserPositionY = rand() % (BOARD_SIZE - 3);
 	 while (1)//if not valid place reroll
 	 {
 		 
@@ -117,24 +173,27 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 			 && shipBoard.board[CruiserPositionX][CruiserPositionY + 1] == 0
 			 && shipBoard.board[CruiserPositionX][CruiserPositionY + 2] == 0)
 			 break;
-		 CruiserPositionX = rand() % (BOARD_SIZE - 1) + 1;
-		 CruiserPositionY = rand() % (BOARD_SIZE - 3) + 1;
+		 CruiserPositionX = rand() % (BOARD_SIZE - 1);
+		 CruiserPositionY = rand() % (BOARD_SIZE - 3);
 	 }
 	shipBoard.board[CruiserPositionX][CruiserPositionY] = 1;
 	shipBoard.board[CruiserPositionX][CruiserPositionY+1] = 1;
 	shipBoard.board[CruiserPositionX][CruiserPositionY+2] = 1;
 
+	shipBoard.CruiserCoordinates.push_back(std::make_pair(CruiserPositionX, CruiserPositionY));
+	shipBoard.CruiserCoordinates.push_back(std::make_pair(CruiserPositionX, CruiserPositionY+1));
+	shipBoard.CruiserCoordinates.push_back(std::make_pair(CruiserPositionX, CruiserPositionY+2));
 
-	int SubPostionX = rand() % (BOARD_SIZE - 1) + 1; //4x1
-	int SubPostionY = rand() % (BOARD_SIZE - 4) + 1;
+
+	int SubPostionX = rand() % (BOARD_SIZE - 1); //4x1
+	int SubPostionY = rand() % (BOARD_SIZE - 4);
 	while (1)//if not valid place reroll
 	{
 
 		if (shipBoard.board[SubPostionX][SubPostionY] == 0
 			&& shipBoard.board[SubPostionX][SubPostionY + 1] == 0
 			&& shipBoard.board[SubPostionX][SubPostionY + 2] == 0
-			&& shipBoard.board[SubPostionX][SubPostionY + 3] == 0
-			&& shipBoard.board[SubPostionX][SubPostionY - 1] == 0)
+			&& shipBoard.board[SubPostionX][SubPostionY + 3] == 0)
 			break;
 		SubPostionX = rand() % (BOARD_SIZE - 1) + 1;
 		SubPostionY = rand() % (BOARD_SIZE - 4) + 1;
@@ -143,6 +202,11 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 	shipBoard.board[SubPostionX][SubPostionY + 1] = 1;
 	shipBoard.board[SubPostionX][SubPostionY + 2] = 1;
 	shipBoard.board[SubPostionX][SubPostionY + 3] = 1;
+
+	shipBoard.SubmarineCoordinates.push_back(std::make_pair(SubPostionX, SubPostionY));
+	shipBoard.SubmarineCoordinates.push_back(std::make_pair(SubPostionX, SubPostionY+1));
+	shipBoard.SubmarineCoordinates.push_back(std::make_pair(SubPostionX, SubPostionY+2));
+	shipBoard.SubmarineCoordinates.push_back(std::make_pair(SubPostionX, SubPostionY+3));
 
 
  	
@@ -256,6 +320,14 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 		 shipBoard.board[PositionY + 2][PositionX] = 1;
 		 shipBoard.board[PositionY + 3][PositionX] = 1;
 		 shipBoard.board[PositionY + 4][PositionX] = 1;
+
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY,   PositionX));
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY+1, PositionX));
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY+2, PositionX));
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY+3, PositionX));
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY+4, PositionX));
+
+
 	 }
 	 else
 	 {
@@ -264,6 +336,12 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 		 shipBoard.board[PositionY][PositionX + 2] = 1;
 		 shipBoard.board[PositionY][PositionX + 3] = 1;
 		 shipBoard.board[PositionY][PositionX + 4] = 1;
+
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY, PositionX));
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY, PositionX+1));
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY, PositionX+2));
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY, PositionX+3));
+		 shipBoard.AircraftCoordinates.push_back(std::make_pair(PositionY, PositionX+4));
 	 }
 
 	 while (1) //manual 2x1 ship placement with vertical horizontal options
@@ -304,11 +382,17 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 	 {
 		 shipBoard.board[PositionY][PositionX]= 1;
 		 shipBoard.board[PositionY+1][PositionX] = 1;
+		 shipBoard.DestroyerCoordinates.push_back(std::make_pair(PositionY, PositionX));
+		 shipBoard.DestroyerCoordinates.push_back(std::make_pair(PositionY+1, PositionX));
+
 	 }
 	 else
 	 {
 		 shipBoard.board[PositionY][PositionX] = 1;
 		 shipBoard.board[PositionY][PositionX+1] = 1;
+		 shipBoard.DestroyerCoordinates.push_back(std::make_pair(PositionY, PositionX));
+		 shipBoard.DestroyerCoordinates.push_back(std::make_pair(PositionY, PositionX+1));
+
 	 }
 	 
 	 while (1) // manual 3x1ship placement with vertical or horizontal optiosn
@@ -351,12 +435,19 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 		 shipBoard.board[PositionY][PositionX] = 1;
 		 shipBoard.board[PositionY + 1][PositionX] = 1;
 		 shipBoard.board[PositionY + 2][PositionX] = 1;
+		 shipBoard.CruiserCoordinates.push_back(std::make_pair(PositionY, PositionX));
+		 shipBoard.CruiserCoordinates.push_back(std::make_pair(PositionY+1, PositionX));
+		 shipBoard.CruiserCoordinates.push_back(std::make_pair(PositionY+2, PositionX));
 	 }
 	 else
 	 {
 		 shipBoard.board[PositionY][PositionX] = 1;
 		 shipBoard.board[PositionY][PositionX + 1] = 1;
 		 shipBoard.board[PositionY][PositionX + 2] = 1;
+		 shipBoard.CruiserCoordinates.push_back(std::make_pair(PositionY, PositionX));
+		 shipBoard.CruiserCoordinates.push_back(std::make_pair(PositionY, PositionX + 1));
+		 shipBoard.CruiserCoordinates.push_back(std::make_pair(PositionY, PositionX + 2));
+
 	 }
 
 	 while (1) // manual 4x1ship placement with vertical or horizontal optiosn
@@ -388,7 +479,6 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 				 else
 					 std::cout << "Invalid positional input, try again \n";
 			 }
-
 			 break;
 		 }
 		 else
@@ -402,6 +492,11 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 		 shipBoard.board[PositionY + 1][PositionX] = 1;
 		 shipBoard.board[PositionY + 2][PositionX] = 1;
 		 shipBoard.board[PositionY + 3][PositionX] = 1;
+
+		 shipBoard.SubmarineCoordinates.push_back(std::make_pair(PositionY, PositionX));
+		 shipBoard.SubmarineCoordinates.push_back(std::make_pair(PositionY+1, PositionX));
+		 shipBoard.SubmarineCoordinates.push_back(std::make_pair(PositionY+2, PositionX));
+		 shipBoard.SubmarineCoordinates.push_back(std::make_pair(PositionY+3, PositionX));
 	 }
 	 else
 	 {
@@ -409,10 +504,12 @@ bool ComputerTurn(std::vector<std::vector<bool>>& Player1Board , std::vector<std
 		 shipBoard.board[PositionY][PositionX + 1] = 1;
 		 shipBoard.board[PositionY][PositionX + 2] = 1;
 		 shipBoard.board[PositionY][PositionX + 3] = 1;
+
+		 shipBoard.SubmarineCoordinates.push_back(std::make_pair(PositionY, PositionX));
+		 shipBoard.SubmarineCoordinates.push_back(std::make_pair(PositionY, PositionX + 1));
+		 shipBoard.SubmarineCoordinates.push_back(std::make_pair(PositionY, PositionX + 2));
+		 shipBoard.SubmarineCoordinates.push_back(std::make_pair(PositionY, PositionX + 3));
 	 }
-
-
-	
 }
 
 
@@ -443,7 +540,7 @@ int main()
 	PlayerBoard P1Board;
 	P1Board.board = P1;
 
-	PlaceShips(ComputerBoard);
+	ComputerPlaceShips(ComputerBoard);
 	ManualPlaceShips(P1Board);
 	ComputerAttackMap(P1Board, CompAttackMap);
 	EmptyAttackMap(P1AttackMap);
@@ -484,9 +581,45 @@ int main()
 			P1Attacks[PositionX][PositionY] = 1;
 			if (ComputerBoard.board[PositionX][PositionY] == 1)
 			{	
-				P1AttackMap[PositionX][PositionY] = 'X';
 				P1Hits++;
 				std::cout << "Player 1 hit!\n";
+				P1AttackMap[PositionX][PositionY] = 'X';
+				for (int i = 0; i < ComputerBoard.AircraftCoordinates.size(); i++)
+				{
+					if (ComputerBoard.AircraftCoordinates[i] == std::make_pair(PositionX, PositionY))
+					{
+						ComputerBoard.AircraftCounter--;
+						if (ComputerBoard.AircraftCounter == 0)
+							std::cout << "The enemy Aircraft Carrier ship sunk!\n";
+					}
+				}
+				for (int i = 0; i < ComputerBoard.DestroyerCoordinates.size(); i++)
+				{
+					if (ComputerBoard.DestroyerCoordinates[i] == std::make_pair(PositionX, PositionY))
+					{
+						ComputerBoard.DestroyerCounter--;
+						if (ComputerBoard.DestroyerCounter == 0)
+							std::cout << "The enemy Your Destroyer ship sunk!\n";
+					}
+				}
+				for (int i = 0; i < ComputerBoard.CruiserCoordinates.size(); i++)
+				{
+					if (ComputerBoard.CruiserCoordinates[i] == std::make_pair(PositionX, PositionY))
+					{
+						ComputerBoard.CruiserCounter--;
+						if (ComputerBoard.CruiserCounter == 0)
+							std::cout << "The enemy Cruiser ship sunk!\n";
+					}
+				}
+				for (int i = 0; i < ComputerBoard.SubmarineCoordinates.size(); i++)
+				{
+					if (ComputerBoard.SubmarineCoordinates[i] == std::make_pair(PositionX, PositionY))
+					{
+						ComputerBoard.SubmarineCounter--;
+						if (ComputerBoard.SubmarineCounter == 0)
+							std::cout << "The enemy Submarine ship sunk!\n";
+					}
+				}			
 			}
 			else
 			{
@@ -494,7 +627,7 @@ int main()
 				std::cout << "Player 1 miss!\n";
 			}
 		
-			if (ComputerTurn(P1Board.board, ComputerAttacks, CompAttackMap))
+			if (ComputerTurn(P1Board, ComputerAttacks, CompAttackMap))
 			{
 				ComputerHits++;
 			}
